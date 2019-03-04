@@ -11,10 +11,11 @@ var last_wk_btn = document.getElementById('last-week');
 var all_time_btn = document.getElementById('all-time');
 
 // This js should always poll the production api
-const endpoint = 'http://localhost:5000/api';
-// const endpoint = 'http://jackmeussdorffer.com/api';
+// const endpoint = 'http://localhost:5000/api';
+const endpoint = 'https://jackmeussdorffer.com/api';
 const alertColor = '#FF0000';
-const staticColor = '#4286f4';
+// const staticColor = '#4286f4';
+const staticColor = '#f4eb42';
 
 function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
