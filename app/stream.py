@@ -52,7 +52,8 @@ class Listener(StreamListener):
         r = requests.post(
             PARAMS['endpoint'], 
             json=tweet,
-            headers={'Content-Type':'application/json'}
+            headers={'Content-Type':'application/json'},
+            verify=True
         )
 
         print(f'{tweet["incident"]} | {tweet["local_time"]} | {r.status_code}')
