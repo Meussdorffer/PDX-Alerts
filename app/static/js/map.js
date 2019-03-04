@@ -14,8 +14,7 @@ var all_time_btn = document.getElementById('all-time');
 // const endpoint = 'http://localhost:5000/api';
 const endpoint = 'https://jackmeussdorffer.com/api';
 const alertColor = '#FF0000';
-// const staticColor = '#4286f4';
-const staticColor = '#f4eb42';
+const staticColor = '#4286f4';
 
 function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
