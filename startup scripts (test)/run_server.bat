@@ -1,1 +1,0 @@
-cd C:\Users\Jack\PortlandAlerts & venv\scripts\activate & flask run

@@ -1,17 +1,18 @@
 from tweepy import Stream, OAuthHandler
 from tweepy.streaming import StreamListener
 from tweepy.api import API
-from secret import PARAMS
 import json
 import re
 import googlemaps
 import requests
 from datetime import datetime
 
+with open('secret.json') as f:
+    PARAMS = json.loads(f.read())
+
 class Listener(StreamListener):
 
     def __init__(self, api=None):
-        # self.api = api or API()
         self.api = API(retry_count=10, retry_delay=30, timeout=1000, wait_on_rate_limit=True)
         self.gmaps = googlemaps.Client(key=PARAMS['googlemaps_apikey'])
 
@@ -62,8 +63,7 @@ class Listener(StreamListener):
         except Exception as e:
             print(f'{datetime.now()} -- {str(e)}')
             with open('streamlog.txt', 'w+') as f:
-                f.write(str(e))
-
+                f.write(f'{datetime.now()} -- {str(e)}')
 
 
     def on_error(self, status):

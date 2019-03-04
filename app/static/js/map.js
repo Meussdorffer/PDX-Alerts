@@ -10,10 +10,11 @@ var last_3day_btn = document.getElementById('3-days');
 var last_wk_btn = document.getElementById('last-week');
 var all_time_btn = document.getElementById('all-time');
 
+// This js should always poll the production api
 const endpoint = 'http://localhost:5000/api';
+// const endpoint = 'http://jackmeussdorffer.com/api';
 const alertColor = '#FF0000';
 const staticColor = '#4286f4';
-// var button = document.getElementById('test-btn');
 
 function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
@@ -181,8 +182,10 @@ function initMap() {
 function parseMilitary(ts24) {     
     var incTimeArr = ts24.split(':');
     var ts12;
-    if(parseInt(incTimeArr[0]) > 12) {
+    if(parseInt(incTimeArr[0]) >= 12) {
         ts12 = `${parseInt(incTimeArr[0]) - 12}:${incTimeArr[1]} PM`;
+    } else if(parseInt(incTimeArr[0]) == 12) {
+        ts12 = `${parseInt(incTimeArr[0])}:${incTimeArr[1]} PM`;
     } else {
         ts12 = ts24 + ' AM'; 
     }
@@ -251,22 +254,12 @@ function poll(lookback_seconds=default_lookback_seconds, animate=true) {
 }
 
 
-
-
 function addTweetToFeed(tweet) {
 
     var datetime = new Date(Date.parse(tweet.created_at));
     var localTime = datetime.toLocaleTimeString();
     var incTime = parseMilitary(tweet.local_time);
     localTime += `\u00A0\u00A0\u00A0\u00A0${datetime.getMonth()+1}/${datetime.getDate()}`;
-
-    // var incTimeArr = tweet.local_time.split(':');
-    // var incTime;
-    // if(parseInt(incTimeArr[0]) > 12) {
-    //     incTime = `${parseInt(incTimeArr[0]) - 12}:${incTimeArr[1]} PM`;
-    // } else {
-    //     incTime = tweet.localTime + ' AM'; 
-    // }
 
     var htmlString = `
         <div class="feed-item" id=${tweet.id}>
@@ -278,7 +271,6 @@ function addTweetToFeed(tweet) {
 
     var newDiv = document.getElementById(tweet.id);
     newDiv.addEventListener('click', function(){
-        // lookup circle by id
         var circle = mapped_circles[this.getAttribute('id')];
         map.setCenter(circle.center);
         map.setZoom(15);
@@ -351,23 +343,7 @@ all_time_btn.addEventListener('click', function() {
 
 
 // Begin polling for new data points
-
 $(function() {
     setInterval(poll, 5000);
-    // getTest();
 });
 
-
-
-
-
-
-// // TEST FUNCTIONS
-// function getTest() {
-//     $.get(
-//         'http://localhost:5000/test',
-//         function(data, status) {
-//             addIncidentsToMap(map, data, animate=true, addToFeed=true, testOverride=true);
-//         }
-//     );
-// }

@@ -64,13 +64,3 @@ def api():
 			status=200,
 			mimetype='application/json'
 		)
-
-	
-@app.route('/test', methods=['POST', 'GET'])
-def test():
-	tweets = Tweet.query.all()[-5:]
-	return app.response_class(
-		response=json.dumps([t.dictify() for t in tweets]),
-		status=200,
-		mimetype='application/json'
-	)
