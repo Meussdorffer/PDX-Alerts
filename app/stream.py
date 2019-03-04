@@ -6,6 +6,11 @@ import re
 import googlemaps
 import requests
 from datetime import datetime
+import os
+
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
 
 with open('secret.json', 'r') as f:
     PARAMS = json.loads(f.read())
