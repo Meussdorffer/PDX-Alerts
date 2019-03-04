@@ -3,3 +3,4 @@ secret.py
 secret.json
 venv
 dev scripts
+alerts.db
