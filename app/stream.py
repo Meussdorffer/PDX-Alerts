@@ -7,7 +7,7 @@ import googlemaps
 import requests
 from datetime import datetime
 
-with open('secret.json') as f:
+with open('secret.json', 'r') as f:
     PARAMS = json.loads(f.read())
 
 class Listener(StreamListener):
