@@ -173,9 +173,9 @@ function initMap() {
             }
         ]
     });
-
+    
     infowindow = new google.maps.InfoWindow;
-    addIncidentsToMap(map, tweets);
+    addIncidentsToMap(map, tweets, animate=false, addToFeed=true);
 
 }
 
