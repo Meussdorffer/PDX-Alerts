@@ -3,6 +3,7 @@ var infowindow;
 var default_lookback_seconds = 60;
 var captured_tweets = [];
 var mapped_circles = {};
+var incidentCounts = {};
 
 var feed = document.getElementById('feed');
 var last_24hr_btn = document.getElementById('24-hours');
@@ -177,6 +178,20 @@ function initMap() {
     infowindow = new google.maps.InfoWindow;
     addIncidentsToMap(map, tweets, animate=false, addToFeed=true);
 
+}
+
+function getDistinctCountOfIncidents(tweets) {
+    var counts = {};
+
+    for(var tweet in tweets) {
+        if(!tweets[tweet].id in incidentCounts) {
+            incidentCounts[tweets[tweet].id] = 0;
+        } else {
+            incidentCounts[tweets[tweet].id] += 1;
+        }
+    }
+
+    return counts;
 }
 
 function parseMilitary(ts24) {     

@@ -61,30 +61,32 @@ class Listener(StreamListener):
             verify=True
         )
 
-        print(f'{tweet["incident"]} | {tweet["local_time"]} | {r.status_code}')
+        # print(f'{tweet["incident"]} | {tweet["local_time"]} | {r.status_code}')
 
     def on_data(self, data):
         try:
             self.parse_tweet(data)
         except Exception as e:
-            print(f'{datetime.now()} -- {str(e)}')
+            print(f'Parsing Error: {datetime.now()} | {str(e)} | {str(data)}')
             with open('streamlog.txt', 'w+') as f:
-                f.write(f'{datetime.now()} -- {str(e)}')
+                f.write(f'Parsing Error: {datetime.now()} | {str(e)} | {str(data)}')
 
 
     def on_error(self, status):
-        print(status)
+        print(f'Tweepy Error: {datetime.now()} | {str(status)}')
+        with open('streamlog.txt', 'w+') as f:
+            f.write(f'Tweepy Error: {datetime.now()} | {str(status)}')
 
 
 if __name__ == '__main__':
 
-    track = ['1602852614',]
+    follow = ['1602852614',]
 
     auth = OAuthHandler(PARAMS['CONSUMER_KEY'], PARAMS['CONSUMER_SECRET'])
     auth.set_access_token(PARAMS['ACCESS_TOKEN'], PARAMS['ACCESS_TOKEN_SECRET'])
 
     twitterStream = Stream(auth, Listener())
-    twitterStream.filter(languages=['en'], follow=track)
+    twitterStream.filter(languages=['en'], follow=follow)
 
 
 
