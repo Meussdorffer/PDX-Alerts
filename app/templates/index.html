@@ -1,22 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
 
-  <div id="tweet-feed">
+  <div id="floating-feed">
+    <div id="control">
+      <button id="24-hours">last 24 hours</button>
+      <button id="3-days">last 3 days</button>
+      <button id="last-week">last week</button>
+      <button id="all-time">all time</button>
+    </div>
+
+    <div id="feed">
+    </div>
+
+
   </div>
 
-    <div id="floating-panel">
-      <div id="control">
-        <button id="24-hours">last 24 hours</button>
-        <button id="3-days">last 3 days</button>
-        <button id="last-week">last week</button>
-        <button id="all-time">all time</button>
-      </div>
-
-      <div id="feed">
-      </div>
-
+  <div id="floating-viz">
+    <div id="viz-container">
     </div>
-    
+  </div>   
 
 
     <div id="map"></div>

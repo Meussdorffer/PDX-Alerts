@@ -3,7 +3,7 @@ var infowindow;
 var default_lookback_seconds = 60;
 var captured_tweets = [];
 var mapped_circles = {};
-var incidentCounts = {};
+var incidentIdHash = {};
 
 var feed = document.getElementById('feed');
 var last_24hr_btn = document.getElementById('24-hours');
@@ -176,22 +176,193 @@ function initMap() {
     });
     
     infowindow = new google.maps.InfoWindow;
-    addIncidentsToMap(map, tweets, animate=false, addToFeed=true);
-
+    addIncidentsToMap(map, tweets, animate=false, addToFeed=true, draw=true);
+    // storeIncidentCounts(tweets);
+    // drawTopFiveIncidents(grabTopFiveIncidents());
 }
 
-function getDistinctCountOfIncidents(tweets) {
-    var counts = {};
-
+function storeIncidentCounts(tweets) {
+    incidentIdHash = {};
     for(var tweet in tweets) {
-        if(!tweets[tweet].id in incidentCounts) {
-            incidentCounts[tweets[tweet].id] = 0;
+        if(tweets[tweet].incident in incidentIdHash) {
+            incidentIdHash[tweets[tweet].incident] += 1;
         } else {
-            incidentCounts[tweets[tweet].id] += 1;
+            incidentIdHash[tweets[tweet].incident] = 1;
         }
     }
+}
 
-    return counts;
+function grabTopFiveIncidents() {
+    var topFive = [];
+    var keysSorted = Object.keys(incidentIdHash).sort( function(a,b) {
+        return incidentIdHash[a]-incidentIdHash[b]
+    });
+    keysSorted.reverse();
+
+    // for(var i = 0; i < 5; i++) {
+    // for(var i = 0; i < keysSorted.length; i++) {
+    for(var i = 0; i < 15; i++) {
+        var key = keysSorted[i];
+        var val = incidentIdHash[key];
+        topFive.push({"incident":key, "num":val});
+    }
+
+    return topFive;
+}
+
+function drawTopFiveIncidents(data) {
+    // var svgHeight = 270, svgWidth = 410;
+    var svgHeight = 3000, svgWidth = 410;
+    var pad = 10;
+    // var barHeight = (svgHeight / 5) - pad;
+    // var barHeight = (270 / 5) - pad;
+    var barHeight = (300 / 5) - pad;
+    var headerSpace = 100;
+    var numPadding = 20;
+
+    var x = d3.scaleLinear()
+        .domain([0, data[0].num])
+        .range([0, svgWidth-pad-headerSpace]);
+
+    var viz = d3.select('#viz-container')
+        .append('svg')
+        .attr('id', 'viz-svg')
+        .attr('width', svgWidth)
+        .attr('height', svgHeight);
+
+    var graph = viz.selectAll('g')
+        .data(data)
+        .enter().append('g')
+
+    var bars = graph.append('rect')
+        .attr('fill', staticColor)
+        .attr('x', headerSpace)
+        .attr('y', function(d,i) {
+            return (i * barHeight) + pad;
+        })
+        .attr('height', barHeight - pad)
+        .attr('width', function(d) {
+            return x(d.num);
+        })
+        .attr('data-incident', function(d) {
+            return d.incident;
+        });
+
+    /*
+        Use these rects to help center header text
+    */
+
+    // var headers = graph.append('rect')
+    //     .attr('fill', 'grey')
+    //     .attr('x', 0)
+    //     .attr('y', function(d,i) {
+    //         return (i * barHeight) + pad;
+    //     })
+    //     .attr('width', headerSpace)
+    //     .attr('height', barHeight - pad);
+
+    var headers = graph.append('text')
+        .attr('width', headerSpace)
+        .attr('height', barHeight)
+        .attr('x', 0)
+        .attr('y', function(d,i) {
+            return (i * barHeight) + pad;
+        })
+        .text(function(d) {
+            return d.incident;
+        })
+        .attr('fill', 'white')
+        .call(wrap, 100)
+        .call(center, barHeight-pad)
+
+    var numbers = graph.append('text')
+        .attr('x', function(d) {
+            var x_val = x(d.num) + headerSpace - numPadding; 
+            if(x_val < headerSpace) {
+                return 110;
+            } else {
+                return x_val; 
+            }
+        })
+        .attr('y', function(d, i) {
+            return (i * barHeight) + (barHeight / 2) + pad;
+        })
+        .text(function(d) {
+            return d.num;
+        })
+        .attr('fill', 'white')
+        .attr('font-weight', 'bold');
+
+    headers.selectAll('tspan')
+        .call(rightAlign, headerSpace - 2);
+}
+
+function wrap(text, width) {
+    text.each(function() {
+        var text = d3.select(this),
+            words = text.text()
+                    .replace(' - ', ' ')
+                    .split(/\s+/)
+                    .reverse(),
+            word,
+            line = [],
+            lineNumber = 0,
+            lineHeight = 1.1,
+            y = text.attr("y"),
+            dy = 1.2,
+            tspan = text.text(null)
+                        .append("tspan")
+                        .attr("x", 0)
+                        .attr("y", y)
+                        .attr("dy", dy + "em");
+
+        while(word = words.pop()) {
+            line.push(word);
+            tspan.text(line.join(" "));
+
+            if (tspan.node().getComputedTextLength() > width) {
+                line.pop();
+                tspan.text(line.join(" "));
+                line = [word];
+                tspan = text.append("tspan")
+                            .attr("x", 0)
+                            .attr("y", y)
+                            .attr("dy", ++lineNumber * lineHeight + dy + "em")
+                            .text(word);
+            }
+        }
+    });
+}
+
+function center(text, maxHeight) {
+    text.each(function() {
+        var num_tspans = d3.select(this)
+            .selectAll('tspan')
+            .size();
+
+        var text = d3.select(this);
+
+        if(num_tspans < 3) {
+            var y_delta = parseFloat(text.attr('y')) + (maxHeight / (2 + num_tspans-1)) - 9;
+
+            d3.select(this)
+                .selectAll('tspan')
+                .attr('y', y_delta);
+        }
+
+        text.selectAll('tspan')
+            .attr('style', 'float: right');
+    });
+}
+
+function rightAlign(tspan, maxWidth) {
+    tspan.each(function() {
+        node = d3.select(this);
+        if(node.node().getComputedTextLength() < maxWidth) {
+            var diff = maxWidth - (node.node().getComputedTextLength());
+            node.attr('x', diff / 2);
+        }
+    });
 }
 
 function parseMilitary(ts24) {     
@@ -219,7 +390,7 @@ function showInfoWindow(event) {
     infowindow.open(map);
 }
 
-function addIncidentsToMap(map, tweets, animate=false, addToFeed=false, testOverride=false) {
+function addIncidentsToMap(map, tweets, animate=false, addToFeed=false, draw=false, testOverride=false) {
     for (var tweet in tweets) {
 
         if(!captured_tweets.includes(tweets[tweet].id) || testOverride) {
@@ -252,9 +423,13 @@ function addIncidentsToMap(map, tweets, animate=false, addToFeed=false, testOver
 
         }
     }
+    if(draw) {
+        storeIncidentCounts(tweets);
+        drawTopFiveIncidents(grabTopFiveIncidents());
+    }
 }
 
-function poll(lookback_seconds=default_lookback_seconds, animate=true) {
+function poll(lookback_seconds=default_lookback_seconds, animate=true, draw=false) {
     $.get(
         endpoint,
         {
@@ -262,7 +437,7 @@ function poll(lookback_seconds=default_lookback_seconds, animate=true) {
         },
         function(data, status) {
             if(status === 'success') {
-                addIncidentsToMap(map, data, animate=animate, addToFeed=true);
+                addIncidentsToMap(map, data, animate=animate, addToFeed=true, draw=draw);
             }
         }
     );
@@ -337,7 +512,10 @@ function redrawIncidents(daysToPoll) {
     var lookback = 24*daysToPoll*60*60;
     $("div.feed-item").remove();
     removeAllcircles();
-    poll(lookback, animate=false);
+
+    document.getElementById('viz-svg').remove();
+
+    poll(lookback, animate=false, draw=true);
 }
 
 last_24hr_btn.addEventListener('click', function() {
