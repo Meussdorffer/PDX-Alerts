@@ -13,7 +13,10 @@ def index():
 	query_time = datetime.utcnow() - timedelta(seconds=(60*60*24))
 	tweets = [t.dictify() for t in Tweet.query.filter(Tweet.created_at >= query_time).all()]
 
-	return render_template('index.html', tweets=tweets)
+	with open('app/secret.json') as f:
+		mapskey = json.loads(f.read())
+
+	return render_template('index.html', tweets=tweets, mapskey=mapskey['googlemaps_apikey'])
 
 @app.route('/api', methods=['POST', 'GET'])
 def api():
